@@ -57,6 +57,7 @@ import co.cask.cdap.gateway.handlers.PreferencesHttpHandler;
 import co.cask.cdap.gateway.handlers.ProgramLifecycleHttpHandler;
 import co.cask.cdap.gateway.handlers.RouteConfigHttpHandler;
 import co.cask.cdap.gateway.handlers.SecureStoreHandler;
+import co.cask.cdap.gateway.handlers.ServiceProviderStatsHandler;
 import co.cask.cdap.gateway.handlers.TransactionHttpHandler;
 import co.cask.cdap.gateway.handlers.UsageHandler;
 import co.cask.cdap.gateway.handlers.VersionHandler;
@@ -355,6 +356,7 @@ public final class AppFabricServiceRuntimeModule extends RuntimeModule {
       handlerBinder.addBinding().to(SecureStoreHandler.class);
       handlerBinder.addBinding().to(RemotePrivilegesHandler.class);
       handlerBinder.addBinding().to(RouteConfigHttpHandler.class);
+      handlerBinder.addBinding().to(ServiceProviderStatsHandler.class);
 
       for (Class<? extends HttpHandler> handlerClass : handlerClasses) {
         handlerBinder.addBinding().to(handlerClass);
