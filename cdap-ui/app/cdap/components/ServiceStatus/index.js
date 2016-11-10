@@ -51,6 +51,10 @@ function ServiceStatus({status, name, isLoading}) {
       <div className="status-label">
         {name}
       </div>
+      <div className="service-dropdown-container">
+        <span className="fa fa-caret-down service-dropdown-caret">
+        </span>
+      </div>
     </div>
   );
 }

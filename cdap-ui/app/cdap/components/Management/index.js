@@ -23,9 +23,9 @@ import AdminDetailPanel from '../AdminDetailPanel';
 import AdminConfigurePane from '../AdminConfigurePane';
 import AdminOverviewPane from '../AdminOverviewPane';
 import AbstractWizard from 'components/AbstractWizard';
-import Redirect from 'react-router/Redirect';
 import Helmet from 'react-helmet';
 import NamespaceStore from 'services/NamespaceStore';
+import {MyServiceProviderApi} from 'api/serviceproviders';
 
 import T from 'i18n-react';
 var shortid = require('shortid');
@@ -81,7 +81,6 @@ class Management extends Component {
       application: 'CDAP',
       lastUpdated: 15,
       loading: false,
-      redirectTo: false,
       wizard : {
         actionIndex : null,
         actionType : null
@@ -99,8 +98,14 @@ class Management extends Component {
   }
 
   componentDidMount(){
-    this.openNamespaceWizard();
+    // this.openNamespaceWizard();
     this.lastAccessedNamespace = NamespaceStore.getState().selectedNamespace;
+    MyServiceProviderApi.list()
+      .subscribe(
+        (res) => {
+          console.log('response: ' ,res);
+        }
+      );
   }
   clickLeft() {
     var index = this.applications.indexOf(this.state.application);
@@ -134,8 +139,7 @@ class Management extends Component {
         wizard: {
           actionIndex: null,
           actionType: null
-        },
-        redirectTo: true
+        }
       });
   }
 
@@ -161,12 +165,8 @@ class Management extends Component {
         </li>
       );
     });
-    let redirectUrl = this.lastAccessedNamespace ? `/ns/${this.lastAccessedNamespace}` : '/';
     return (
        <div className="management">
-        {
-          this.state.redirectTo && <Redirect to={redirectUrl} />
-        }
         <Helmet
           title={T.translate('features.Management.Title')}
         />
