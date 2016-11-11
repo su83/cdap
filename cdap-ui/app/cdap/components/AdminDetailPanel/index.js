@@ -14,20 +14,61 @@
  * the License.
  */
 
-// import AdminMetadataPane from '../AdminMetadataPane/index.js';
 
 import React, {PropTypes} from 'react';
 require('./AdminDetailPanel.less');
+import AdminMetadataPane from '../AdminMetadataPane/index.js';
+import shortid from 'shortid';
 
 const propTypes = {
   applicationName: PropTypes.string,
   timeFromUpdate: PropTypes.string,
   isLoading: PropTypes.bool,
   clickLeftButton: PropTypes.func,
-  clickRightButton: PropTypes.func
+  clickRightButton: PropTypes.func,
+  serviceData: PropTypes.object
 };
+
 //<AdminMetadataPane />
-function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, clickRightButton}){
+function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, clickRightButton, serviceData}){
+
+
+  let panelData = [];
+
+  //Process the data so it can be easily consumed by child components
+  for(let key in serviceData){
+    if(serviceData.hasOwnProperty(key)){
+      let category = key;
+
+      //Construct Array from Object Category
+      let pairs = [];
+      Object.keys(serviceData[key]).map((item) => {
+        pairs.push({
+          'statName' : item,
+          'statNum' : serviceData[key][item]
+        });
+      });
+
+      panelData.push({
+        'statsHeader' : category,
+        'stats' : pairs
+      });
+    }
+  }
+
+  let panes = panelData.map((item) => {
+    console.log('item: ', item);
+    if(item.stats.length){
+      return (
+        <AdminMetadataPane
+          statObject={item}
+          key={shortid.generate()}
+        />
+      );
+    }
+  });
+
+
   return (
     <div className="admin-detail-panel">
       <div onClick={clickLeftButton} className="admin-detail-panel-button-left">
@@ -45,11 +86,7 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
         </div>
       </div>
       <div className="admin-detail-panel-body">
-        <div className="end-line" />
-
-        <div className="vertical-line" />
-        <div className="vertical-line" />
-        <div className="vertical-line" />
+        {panes}
         <div className="end-line" />
       </div>
     </div>

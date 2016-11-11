@@ -247,6 +247,7 @@ class Management extends Component {
               timeFromUpdate={this.state.lastUpdated}
               clickLeftButton={this.clickLeft}
               clickRightButton={this.clickRight}
+              serviceData={this.state.serviceData[this.state.application]}
             />
           </div>
           <div className="container">
