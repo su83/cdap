@@ -14,51 +14,86 @@
  * the License.
  */
 
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
 require('./ServiceStatus.less');
 var classNames = require('classnames');
+import {Dropdown, DropdownMenu} from 'reactstrap';
 
-const propTypes = {
+export default class ServiceStatus extends Component {
+
+  constructor(props){
+    super(props);
+    this.toggleDropdown = this.toggleDropdown.bind(this);
+    this.state = {
+      isDropdownOpen : false
+    };
+  }
+
+  toggleDropdown(){
+    this.setState({
+      isDropdownOpen : !this.state.isDropdownOpen
+    });
+  }
+
+  render(){
+    var circle = '';
+
+    if(!this.props.isLoading){
+      switch(this.props.status){
+          case 'Green' :
+            circle = <div className={classNames({"status-circle-green" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
+            break;
+          case 'Yellow' :
+            circle = <div className={classNames({"status-circle-yellow" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
+            break;
+          case 'Red' :
+            circle = <div className={classNames({"status-circle-red" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
+            break;
+          default:
+            circle = <div className="status-circle-grey" />;
+      }
+    } else {
+      circle = <div className="status-circle-grey" />;
+    }
+
+    //To-Do: make it such that the dropdown menu does not get cut off by the container element
+    return (
+      <div  onClick={this.toggleDropdown} className="service-status">
+        {circle}
+        <div className="status-label">
+          {this.props.name}
+        </div>
+        <div className="service-dropdown-container">
+          <Dropdown
+            isOpen={this.state.isDropdownOpen}
+            toggle={this.toggleDropdown}
+            className="service-dropdown"
+          >
+            <span className="fa fa-caret-down service-dropdown-caret">
+            </span>
+            <DropdownMenu>
+              <div className="service-dropdown-item">
+                Option 1
+              </div>
+              <div className="service-dropdown-item">
+                Option 2
+              </div>
+              <div className="service-dropdown-item">
+                Option 3
+              </div>
+              <div className="service-dropdown-item">
+                Option 4
+              </div>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+      </div>
+    );
+  }
+}
+
+ServiceStatus.propTypes = {
   name: PropTypes.string,
   status: PropTypes.string,
   isLoading: PropTypes.bool
 };
-
-function ServiceStatus({status, name, isLoading}) {
-  var circle = '';
-
-  if(!isLoading){
-    switch(status){
-        case 'Green' :
-          circle = <div className={classNames({"status-circle-green" : !isLoading, "status-circle-grey" : isLoading})} />;
-          break;
-        case 'Yellow' :
-          circle = <div className={classNames({"status-circle-yellow" : !isLoading, "status-circle-grey" : isLoading})} />;
-          break;
-        case 'Red' :
-          circle = <div className={classNames({"status-circle-red" : !isLoading, "status-circle-grey" : isLoading})} />;
-          break;
-        default:
-          circle = <div className="status-circle-grey" />;
-    }
-  } else {
-    circle = <div className="status-circle-grey" />;
-  }
-
-  return (
-    <div className="service-status">
-      {circle}
-      <div className="status-label">
-        {name}
-      </div>
-      <div className="service-dropdown-container">
-        <span className="fa fa-caret-down service-dropdown-caret">
-        </span>
-      </div>
-    </div>
-  );
-}
-
-ServiceStatus.propTypes = propTypes;
-
-export default ServiceStatus;

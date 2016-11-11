@@ -78,49 +78,96 @@ class Management extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      application: 'CDAP',
+      application: '',
+      applications: [],
+      services: [],
       lastUpdated: 15,
       loading: false,
       wizard : {
         actionIndex : null,
         actionType : null
-      }
+      },
+      serviceProviders: []
     };
 
-    this.unsub;
+    this.sub = MyServiceProviderApi.pollList()
+      .subscribe(
+        (res) => {
+          console.log('response: ', res);
+          let apps = [];
+          let services = [];
+          for(let key in res){
+            if(res.hasOwnProperty(key)){
+              services.push({
+                name: key.toUpperCase(),
+                version: res[key].version,
+                url: res[key].url,
+                logs: res[key].logsUrl
+              });
+              apps.push(key.toUpperCase());
+            }
+          }
+
+          let current = apps[0];
+          this.setState({
+            application : current,
+            applications : apps,
+            services : services,
+            lastUpdated : 'now'
+          });
+        }
+      );
+
     this.lastAccessedNamespace;
     this.interval = undefined;
+    this.getServices = this.getServices.bind(this);
     this.clickLeft = this.clickLeft.bind(this);
     this.clickRight = this.clickRight.bind(this);
     this.setToContext = this.setToContext.bind(this);
     this.openNamespaceWizard = this.openNamespaceWizard.bind(this, 0, 'add_namespace');
-    this.applications = ['CDAP', 'YARN', 'HBASE'];
+  }
+
+  getServices(apps) {
+    apps.forEach((app) => {
+
+      MyServiceProviderApi.get({
+        serviceprovider : app.toLowerCase()
+      })
+      .subscribe( (res) => {
+        console.log('Res: ', res);
+      });
+    });
+    return 'test it';
   }
 
   componentDidMount(){
     // this.openNamespaceWizard();
     this.lastAccessedNamespace = NamespaceStore.getState().selectedNamespace;
-    MyServiceProviderApi.list()
-      .subscribe(
-        (res) => {
-          console.log('response: ' ,res);
-        }
-      );
+
+    //To-Do:
+    //1. Process data in subscribe method ; handle the error case
+    //2. Unsubscribe from the poll in componentWillUnmount
+    //3. Refactor the child containers such that they accept the incoming data
+
   }
+  componentWillUnmount(){
+    this.sub();
+  }
+
   clickLeft() {
-    var index = this.applications.indexOf(this.state.application);
+    var index = this.state.applications.indexOf(this.state.application);
     if(index === -1 || index === 0){
       return;
     }
-    this.setToContext(this.applications[index-1]);
+    this.setToContext(this.state.applications[index-1]);
   }
 
   clickRight() {
-    var index = this.applications.indexOf(this.state.application);
-    if(index === -1 || index === this.applications.length-1){
+    var index = this.state.applications.indexOf(this.state.application);
+    if(index === -1 || index === this.state.applications.length-1){
       return;
     }
-    this.setToContext(this.applications[index+1]);
+    this.setToContext(this.state.applications[index+1]);
   }
 
   setToContext(contextName) {
@@ -154,7 +201,7 @@ class Management extends Component {
 
   render () {
 
-    var navItems = this.applications.map( (item) => {
+    var navItems = this.state.applications.map( (item) => {
       return (
         <li
           className={classNames({'active' : this.state.application === item})}
@@ -165,6 +212,14 @@ class Management extends Component {
         </li>
       );
     });
+
+    // return (
+    //   <div>
+    //     {navItems}
+    //   </div>
+    // );
+
+
     return (
        <div className="management">
         <Helmet
@@ -206,7 +261,10 @@ class Management extends Component {
         </div>
         <div className="admin-bottom-panel">
           <AdminConfigurePane openNamespaceWizard={this.openNamespaceWizard}/>
-          <AdminOverviewPane isLoading={this.state.loading} />
+          <AdminOverviewPane
+            isLoading={this.state.loading}
+            services={this.state.services}
+          />
         </div>
         <AbstractWizard
           isOpen={this.state.wizard.actionIndex !== null && this.state.wizard.actionType !== null}
@@ -217,6 +275,76 @@ class Management extends Component {
       </div>
     );
   }
+
+
+
+    // render () {
+    //
+    //   var navItems = this.applications.map( (item) => {
+    //     return (
+    //       <li
+    //         className={classNames({'active' : this.state.application === item})}
+    //         key={shortid.generate()}
+    //         onClick={this.setToContext.bind(this, item)}
+    //       >
+    //         {item}
+    //       </li>
+    //     );
+    //   });
+    //   return (
+    //      <div className="management">
+    //       <Helmet
+    //         title={T.translate('features.Management.Title')}
+    //       />
+    //       <div className="top-panel">
+    //         <div className="admin-row top-row">
+    //           <InfoCard
+    //             isLoading={this.state.loading}
+    //             primaryText={dummyData.version}
+    //             secondaryText={T.translate('features.Management.Top.version-label')}
+    //           />
+    //           <InfoCard
+    //             isLoading={this.state.loading}
+    //             primaryText={dummyData.uptime.duration}
+    //             secondaryText={T.translate('features.Management.Top.time-label')}
+    //             superscriptText={dummyData.uptime.unit}
+    //           />
+    //           <ServiceLabel/>
+    //           <ServiceStatusPanel
+    //             isLoading={this.state.loading}
+    //             services={dummyData.services}
+    //           />
+    //         </div>
+    //         <div className="admin-row">
+    //           <AdminDetailPanel
+    //             isLoading={this.state.loading}
+    //             applicationName={this.state.application}
+    //             timeFromUpdate={this.state.lastUpdated}
+    //             clickLeftButton={this.clickLeft}
+    //             clickRightButton={this.clickRight}
+    //           />
+    //         </div>
+    //         <div className="container">
+    //           <ul className="nav nav-pills nav-justified centering-container">
+    //               {navItems}
+    //           </ul>
+    //         </div>
+    //       </div>
+    //       <div className="admin-bottom-panel">
+    //         <AdminConfigurePane openNamespaceWizard={this.openNamespaceWizard}/>
+    //         <AdminOverviewPane isLoading={this.state.loading} />
+    //       </div>
+    //       <AbstractWizard
+    //         isOpen={this.state.wizard.actionIndex !== null && this.state.wizard.actionType !== null}
+    //         onClose={this.closeWizard.bind(this)}
+    //         wizardType={this.state.wizard.actionType}
+    //         backdrop={true}
+    //       />
+    //     </div>
+    //   );
+    // }
+    //
+
 }
 
 export default Management;
