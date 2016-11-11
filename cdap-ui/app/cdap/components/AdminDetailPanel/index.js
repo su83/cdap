@@ -56,12 +56,12 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
     }
   }
 
-  let panes = panelData.map((item) => {
-    console.log('item: ', item);
-    if(item.stats.length){
+  let panes = panelData.map((panel) => {
+    console.log('item: ', panel);
+    if(panel.stats.length){
       return (
         <AdminMetadataPane
-          statObject={item}
+          statObject={panel}
           key={shortid.generate()}
         />
       );

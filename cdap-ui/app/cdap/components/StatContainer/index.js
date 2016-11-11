@@ -25,9 +25,9 @@ const propTypes = {
   isLoading: PropTypes.bool
 };
 
-function StatContainer({number, label, isLoading}) {
+function StatContainer({number, label}) {
   return (
-    <div className={classNames("stat-container", {"hidden" : isLoading})}>
+    <div className={classNames("stat-container")}>
       <div className="stat">
         {number}
       </div>

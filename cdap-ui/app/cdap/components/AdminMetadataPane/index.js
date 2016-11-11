@@ -1,0 +1,87 @@
+/*
+ * Copyright © 2016 Cask Data, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+import React, {PropTypes} from 'react';
+require('./AdminMetadataPane.less');
+import StatContainer from '../StatContainer/index.js';
+import shortid from 'shortid';
+
+//To-Do: Change the way we display these statistics -- we should not have to rely on containers
+function AdminMetadataPane({ statObject }){
+
+  if(!statObject || !statObject.stats) { return; }
+
+  let containers = [];
+
+  //Construct array of stats from those passed in as props - these stats are being passed in successfully
+  let statsList = [];
+
+  statObject.stats.forEach((stat) => {
+    statsList.push (
+      <StatContainer
+        label={stat.statName}
+        number={stat.statNum}
+        key={shortid.generate()}
+      />
+    );
+  });
+
+  //Construct Columns of Statistics
+  for(let j = 0 ; statsList && j < statsList.length; j+=2){
+    let temp;
+
+    if(j+1 < statsList.length){
+      temp = <div><span>{statsList[j]}</span><br/><span>{statsList[j+1]}</span></div>;
+    } else {
+      temp = statsList[j];
+    }
+
+    containers.push(
+      <div className="stat-container" key={shortid.generate()}>
+        {temp}
+      </div>
+    );
+
+    //This code is not being reached??
+    console.log('containers: ', containers);
+  }
+
+  //Return the rendered content
+  return (
+    <div className="metadata-pane">
+      <div className="pane-header">
+        {statObject.statsHeader}
+      </div>
+      <div className="pane-body">
+        {containers}
+      </div>
+    </div>
+  );
+}
+
+AdminMetadataPane.propTypes = {
+  statObject: PropTypes.shape({
+    statsHeader : PropTypes.string,
+    stats: PropTypes.arrayOf(
+      PropTypes.shape({
+        statName: PropTypes.string,
+        statNum: PropTypes.number
+      })
+    )
+  })
+};
+
+export default AdminMetadataPane;
