@@ -21,7 +21,7 @@ require('./AdminDetailPanel.less');
 
 const propTypes = {
   applicationName: PropTypes.string,
-  timeFromUpdate: PropTypes.number,
+  timeFromUpdate: PropTypes.string,
   isLoading: PropTypes.bool,
   clickLeftButton: PropTypes.func,
   clickRightButton: PropTypes.func

@@ -81,19 +81,19 @@ class Management extends Component {
       application: '',
       applications: [],
       services: [],
-      lastUpdated: 15,
+      lastUpdated: '15',
       loading: false,
       wizard : {
         actionIndex : null,
         actionType : null
       },
-      serviceProviders: []
+      serviceProviders: [],
+      serviceData: {}
     };
 
     this.sub = MyServiceProviderApi.pollList()
       .subscribe(
         (res) => {
-          console.log('response: ', res);
           let apps = [];
           let services = [];
           for(let key in res){
@@ -107,7 +107,7 @@ class Management extends Component {
               apps.push(key.toUpperCase());
             }
           }
-
+          this.getServices(services);
           let current = apps[0];
           this.setState({
             application : current,
@@ -128,16 +128,19 @@ class Management extends Component {
   }
 
   getServices(apps) {
-    apps.forEach((app) => {
+    let serviceData = {};
 
+    apps.forEach((app) => {
       MyServiceProviderApi.get({
-        serviceprovider : app.toLowerCase()
+        serviceprovider : app.name.toLowerCase()
       })
       .subscribe( (res) => {
-        console.log('Res: ', res);
+        serviceData[app.name] = res;
+        this.setState({
+          serviceData : serviceData
+        });
       });
     });
-    return 'test it';
   }
 
   componentDidMount(){
@@ -213,13 +216,6 @@ class Management extends Component {
       );
     });
 
-    // return (
-    //   <div>
-    //     {navItems}
-    //   </div>
-    // );
-
-
     return (
        <div className="management">
         <Helmet
@@ -275,8 +271,6 @@ class Management extends Component {
       </div>
     );
   }
-
-
 
     // render () {
     //
