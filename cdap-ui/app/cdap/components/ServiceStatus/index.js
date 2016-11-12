@@ -39,18 +39,10 @@ export default class ServiceStatus extends Component {
     var circle = '';
 
     if(!this.props.isLoading){
-      switch(this.props.status){
-          case 'Green' :
-            circle = <div className={classNames({"status-circle-green" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
-            break;
-          case 'Yellow' :
-            circle = <div className={classNames({"status-circle-yellow" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
-            break;
-          case 'Red' :
-            circle = <div className={classNames({"status-circle-red" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
-            break;
-          default:
-            circle = <div className="status-circle-grey" />;
+      if(this.props.status === 'OK'){
+        circle = <div className={classNames({"status-circle-green" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
+      } else {
+        circle = <div className={classNames({"status-circle-red" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
       }
     } else {
       circle = <div className="status-circle-grey" />;

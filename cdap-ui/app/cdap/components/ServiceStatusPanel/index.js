@@ -28,10 +28,23 @@ const propTypes = {
 export default class ServiceStatusPanel extends Component {
   constructor(props){
     super(props);
-    MyServiceProviderApi.get()
+    this.state = {
+      services : []
+    };
+
+    MyServiceProviderApi.getStatusList()
       .subscribe(
         (res) => {
-          console.log('res: ', res);
+          let statuses = [];
+          Object.keys(res).forEach((statusName) => {
+            statuses.push({
+              name : statusName,
+              status : res[statusName]
+            });
+          });
+          this.setState({
+            services : statuses
+          });
         }
       );
   }
@@ -40,7 +53,7 @@ export default class ServiceStatusPanel extends Component {
     return (
       <div className="service-status-panel">
         {
-          this.props.services.map(function(service){
+          this.state.services.map(function(service){
             return (
               <ServiceStatus
                 key={shortid.generate()}
