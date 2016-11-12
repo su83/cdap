@@ -26,6 +26,7 @@ import AbstractWizard from 'components/AbstractWizard';
 import Helmet from 'react-helmet';
 import NamespaceStore from 'services/NamespaceStore';
 import {MyServiceProviderApi} from 'api/serviceproviders';
+import Mousetrap from 'mousetrap';
 
 import T from 'i18n-react';
 var shortid = require('shortid');
@@ -98,16 +99,16 @@ class Management extends Component {
           let services = [];
           for(let key in res){
             if(res.hasOwnProperty(key)){
+              apps.push(key);
               services.push({
-                name: key.toUpperCase(),
+                name: T.translate(`features.Management.Component-Overview.headers.${key}`),
                 version: res[key].version,
                 url: res[key].url,
                 logs: res[key].logsUrl
               });
-              apps.push(key.toUpperCase());
             }
           }
-          this.getServices(services);
+          this.getServices(apps);
           let current = apps[0];
           this.setState({
             application : current,
@@ -127,15 +128,15 @@ class Management extends Component {
     this.openNamespaceWizard = this.openNamespaceWizard.bind(this, 0, 'add_namespace');
   }
 
-  getServices(apps) {
+  //Retrieve the data for each service
+  getServices(names) {
     let serviceData = {};
-
-    apps.forEach((app) => {
+    names.forEach((name) => {
       MyServiceProviderApi.get({
-        serviceprovider : app.name.toLowerCase()
+        serviceprovider : name
       })
       .subscribe( (res) => {
-        serviceData[app.name] = res;
+        serviceData[name] = res;
         this.setState({
           serviceData : serviceData
         });
@@ -144,19 +145,13 @@ class Management extends Component {
   }
 
   componentDidMount(){
-    // this.openNamespaceWizard();
     this.lastAccessedNamespace = NamespaceStore.getState().selectedNamespace;
-
-    //To-Do:
-    //1. Process data in subscribe method ; handle the error case
-    //2. Unsubscribe from the poll in componentWillUnmount
-    //3. Refactor the child containers such that they accept the incoming data
-
+    Mousetrap.bind('left', this.clickLeft);
+    Mousetrap.bind('right', this.clickRight);
   }
   componentWillUnmount(){
     this.sub();
   }
-
   clickLeft() {
     var index = this.state.applications.indexOf(this.state.application);
     if(index === -1 || index === 0){
@@ -203,7 +198,9 @@ class Management extends Component {
   }
 
   render () {
+    console.log('management render!');
 
+    //Constructs the Services Navigation
     var navItems = this.state.applications.map( (item) => {
       return (
         <li
@@ -211,7 +208,7 @@ class Management extends Component {
           key={shortid.generate()}
           onClick={this.setToContext.bind(this, item)}
         >
-          {item}
+          {T.translate(`features.Management.Component-Overview.headers.${item}`)}
         </li>
       );
     });
@@ -272,74 +269,6 @@ class Management extends Component {
       </div>
     );
   }
-
-    // render () {
-    //
-    //   var navItems = this.applications.map( (item) => {
-    //     return (
-    //       <li
-    //         className={classNames({'active' : this.state.application === item})}
-    //         key={shortid.generate()}
-    //         onClick={this.setToContext.bind(this, item)}
-    //       >
-    //         {item}
-    //       </li>
-    //     );
-    //   });
-    //   return (
-    //      <div className="management">
-    //       <Helmet
-    //         title={T.translate('features.Management.Title')}
-    //       />
-    //       <div className="top-panel">
-    //         <div className="admin-row top-row">
-    //           <InfoCard
-    //             isLoading={this.state.loading}
-    //             primaryText={dummyData.version}
-    //             secondaryText={T.translate('features.Management.Top.version-label')}
-    //           />
-    //           <InfoCard
-    //             isLoading={this.state.loading}
-    //             primaryText={dummyData.uptime.duration}
-    //             secondaryText={T.translate('features.Management.Top.time-label')}
-    //             superscriptText={dummyData.uptime.unit}
-    //           />
-    //           <ServiceLabel/>
-    //           <ServiceStatusPanel
-    //             isLoading={this.state.loading}
-    //             services={dummyData.services}
-    //           />
-    //         </div>
-    //         <div className="admin-row">
-    //           <AdminDetailPanel
-    //             isLoading={this.state.loading}
-    //             applicationName={this.state.application}
-    //             timeFromUpdate={this.state.lastUpdated}
-    //             clickLeftButton={this.clickLeft}
-    //             clickRightButton={this.clickRight}
-    //           />
-    //         </div>
-    //         <div className="container">
-    //           <ul className="nav nav-pills nav-justified centering-container">
-    //               {navItems}
-    //           </ul>
-    //         </div>
-    //       </div>
-    //       <div className="admin-bottom-panel">
-    //         <AdminConfigurePane openNamespaceWizard={this.openNamespaceWizard}/>
-    //         <AdminOverviewPane isLoading={this.state.loading} />
-    //       </div>
-    //       <AbstractWizard
-    //         isOpen={this.state.wizard.actionIndex !== null && this.state.wizard.actionType !== null}
-    //         onClose={this.closeWizard.bind(this)}
-    //         wizardType={this.state.wizard.actionType}
-    //         backdrop={true}
-    //       />
-    //     </div>
-    //   );
-    // }
-    //
-
 }
 
 export default Management;

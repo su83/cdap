@@ -14,9 +14,10 @@
  * the License.
  */
 
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
 require('./ServiceStatusPanel.less');
 import ServiceStatus from '../ServiceStatus/index.js';
+import {MyServiceProviderApi} from 'api/serviceproviders';
 var shortid = require('shortid');
 
 const propTypes = {
@@ -24,25 +25,34 @@ const propTypes = {
   isLoading: PropTypes.bool
 };
 
-function ServiceStatusPanel({services, isLoading}) {
-  return (
-    <div className="service-status-panel">
-      {
-        services.map(function(service){
-          return (
-            <ServiceStatus
-              key={shortid.generate()}
-              isLoading={isLoading}
-              status={service.status}
-              name={service.name}
-            />
-          );
-        })
-      }
-    </div>
-  );
+export default class ServiceStatusPanel extends Component {
+  constructor(props){
+    super(props);
+    MyServiceProviderApi.get()
+      .subscribe(
+        (res) => {
+          console.log('res: ', res);
+        }
+      );
+  }
+
+  render() {
+    return (
+      <div className="service-status-panel">
+        {
+          this.props.services.map(function(service){
+            return (
+              <ServiceStatus
+                key={shortid.generate()}
+                status={service.status}
+                name={service.name}
+              />
+            );
+          })
+        }
+      </div>
+    );
+  }
 }
 
 ServiceStatusPanel.propTypes = propTypes;
-
-export default ServiceStatusPanel;

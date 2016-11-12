@@ -19,6 +19,8 @@ import React, {PropTypes} from 'react';
 require('./AdminDetailPanel.less');
 import AdminMetadataPane from '../AdminMetadataPane/index.js';
 import shortid from 'shortid';
+import {humanReadableNumber} from 'services/helpers';
+import T from 'i18n-react';
 
 const propTypes = {
   applicationName: PropTypes.string,
@@ -29,9 +31,7 @@ const propTypes = {
   serviceData: PropTypes.object
 };
 
-//<AdminMetadataPane />
 function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, clickRightButton, serviceData}){
-
 
   let panelData = [];
 
@@ -41,11 +41,24 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
       let category = key;
 
       //Construct Array from Object Category
+      //Convert number into human readable text
       let pairs = [];
       Object.keys(serviceData[key]).map((item) => {
+
+        let humanReadableNum;
+        /* To-DO: enable this to apply units to the storage figures
+        if(key === 'storage'){
+          humanReadableNum = humanReadableNumber(serviceData[key][item], 'STORAGE');
+        } else {
+          humanReadableNum = humanReadableNumber(serviceData[key][item]);
+        }
+        */
+
+        humanReadableNum = humanReadableNumber(serviceData[key][item]);
+
         pairs.push({
           'statName' : item,
-          'statNum' : serviceData[key][item]
+          'statNum' : humanReadableNum
         });
       });
 
@@ -57,7 +70,6 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
   }
 
   let panes = panelData.map((panel) => {
-    console.log('item: ', panel);
     if(panel.stats.length){
       return (
         <AdminMetadataPane
@@ -68,6 +80,15 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
     }
   });
 
+  //To-Do: Potentially remove this
+  for(let i = panes.length ; i >= 0 ; i--){
+    if(i !== 0 && i != panes.length){
+      panes.splice(i, 0, <div className="vertical-line" />);
+    } else {
+      panes.splice(i, 0, <div className="end-line" />);
+    }
+  }
+  let translatedApplicationName = T.translate(`features.Management.Component-Overview.headers.${applicationName}`);
 
   return (
     <div className="admin-detail-panel">
@@ -79,7 +100,7 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
       </div>
       <div className="admin-detail-panel-header">
         <div className="admin-detail-panel-header-name">
-          {applicationName}
+          {translatedApplicationName}
         </div>
         <div className="admin-detail-panel-header-status">
           Last updated {timeFromUpdate} seconds ago
@@ -87,7 +108,6 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
       </div>
       <div className="admin-detail-panel-body">
         {panes}
-        <div className="end-line" />
       </div>
     </div>
   );

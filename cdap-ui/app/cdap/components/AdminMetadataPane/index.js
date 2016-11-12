@@ -18,6 +18,7 @@ import React, {PropTypes} from 'react';
 require('./AdminMetadataPane.less');
 import StatContainer from '../StatContainer/index.js';
 import shortid from 'shortid';
+import T from 'i18n-react';
 
 //To-Do: Change the way we display these statistics -- we should not have to rely on containers
 function AdminMetadataPane({ statObject }){
@@ -32,7 +33,7 @@ function AdminMetadataPane({ statObject }){
   statObject.stats.forEach((stat) => {
     statsList.push (
       <StatContainer
-        label={stat.statName}
+        label={T.translate(`features.Management.DetailPanel.labels.${stat.statName}`)}
         number={stat.statNum}
         key={shortid.generate()}
       />
@@ -54,16 +55,13 @@ function AdminMetadataPane({ statObject }){
         {temp}
       </div>
     );
-
-    //This code is not being reached??
-    console.log('containers: ', containers);
   }
 
   //Return the rendered content
   return (
     <div className="metadata-pane">
       <div className="pane-header">
-        {statObject.statsHeader}
+        {T.translate(`features.Management.DetailPanel.headers.${statObject.statsHeader}`)}
       </div>
       <div className="pane-body">
         {containers}
@@ -78,7 +76,7 @@ AdminMetadataPane.propTypes = {
     stats: PropTypes.arrayOf(
       PropTypes.shape({
         statName: PropTypes.string,
-        statNum: PropTypes.number
+        statNum: PropTypes.string
       })
     )
   })
