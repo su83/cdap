@@ -17,6 +17,7 @@
 import React, {Component, PropTypes} from 'react';
 require('./ServiceStatus.less');
 var classNames = require('classnames');
+import Datasource from 'services/datasource';
 import {Dropdown, DropdownMenu} from 'reactstrap';
 
 export default class ServiceStatus extends Component {
@@ -27,6 +28,7 @@ export default class ServiceStatus extends Component {
     this.state = {
       isDropdownOpen : false
     };
+    this.MyDataSrc = new Datasource();
   }
 
   toggleDropdown(){
@@ -48,6 +50,10 @@ export default class ServiceStatus extends Component {
       circle = <div className="status-circle-grey" />;
     }
 
+    let logUrl = this.MyDataSrc.constructUrl({
+      _cdapPath : `/system/services/${this.props.name}/logs/next?&maxSize=50`
+    });
+
     return (
       <div  onClick={this.toggleDropdown} className="service-status">
         {circle}
@@ -66,6 +72,12 @@ export default class ServiceStatus extends Component {
               <div className="service-dropdown-item">
                 Provisioned: {this.props.numProvisioned}
               </div>
+              <a href={logUrl} target="_blank">
+                <div className="service-dropdown-item">
+                  <span className="fa fa-file-text" />
+                    Logs
+                </div>
+              </a>
             </DropdownMenu>
           </Dropdown>
         </div>

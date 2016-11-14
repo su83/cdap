@@ -32,7 +32,7 @@ export default class ServiceStatusPanel extends Component {
       services : []
     };
 
-    MyServiceProviderApi.getServicesList()
+    this.servicesPoll = MyServiceProviderApi.getServicesList()
       .subscribe(
         (res) => {
           let statuses = [];

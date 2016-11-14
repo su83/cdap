@@ -92,7 +92,7 @@ class Management extends Component {
       serviceData: {}
     };
 
-    this.sub = MyServiceProviderApi.pollList()
+    MyServiceProviderApi.pollList()
       .subscribe(
         (res) => {
           let apps = [];
@@ -148,9 +148,6 @@ class Management extends Component {
     this.lastAccessedNamespace = NamespaceStore.getState().selectedNamespace;
     Mousetrap.bind('left', this.clickLeft);
     Mousetrap.bind('right', this.clickRight);
-  }
-  componentWillUnmount(){
-    this.sub();
   }
   clickLeft() {
     var index = this.state.applications.indexOf(this.state.application);
