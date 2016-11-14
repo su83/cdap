@@ -83,10 +83,10 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
   //Place vertical lines between panes
   for(let i = panes.length ; i >= 0 ; i--){
     if(i !== 0 && i != panes.length){
-      panes.splice(i, 0, <div className="vertical-line" />);
+      panes.splice(i, 0, <div className="vertical-line" key={shortid.generate()}/>);
     }
   }
-  
+
   let translatedApplicationName = T.translate(`features.Management.Component-Overview.headers.${applicationName}`);
 
   return (

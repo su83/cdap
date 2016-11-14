@@ -65,10 +65,7 @@ export default class ServiceStatus extends Component {
             </span>
             <DropdownMenu>
               <div className="service-dropdown-item">
-                Option 1
-              </div>
-              <div className="service-dropdown-item">
-                Option 2
+                Provisioned: {this.props.numProvisioned}
               </div>
             </DropdownMenu>
           </Dropdown>
@@ -81,5 +78,6 @@ export default class ServiceStatus extends Component {
 ServiceStatus.propTypes = {
   name: PropTypes.string,
   status: PropTypes.string,
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  numProvisioned: PropTypes.number
 };

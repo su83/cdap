@@ -32,14 +32,16 @@ export default class ServiceStatusPanel extends Component {
       services : []
     };
 
-    MyServiceProviderApi.getStatusList()
+    MyServiceProviderApi.getServicesList()
       .subscribe(
         (res) => {
+          console.log('res: ', res);
           let statuses = [];
-          Object.keys(res).forEach((statusName) => {
+          res.forEach((service) => {
             statuses.push({
-              name : statusName,
-              status : res[statusName]
+              name : service.name,
+              status : service.status,
+              provisioned : service.provisioned
             });
           });
           this.setState({
@@ -59,6 +61,7 @@ export default class ServiceStatusPanel extends Component {
                 key={shortid.generate()}
                 status={service.status}
                 name={service.name}
+                numProvisioned={service.provisioned}
               />
             );
           })
