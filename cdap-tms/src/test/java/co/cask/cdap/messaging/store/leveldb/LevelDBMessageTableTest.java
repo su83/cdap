@@ -18,16 +18,16 @@ package co.cask.cdap.messaging.store.leveldb;
 
 import co.cask.cdap.common.conf.CConfiguration;
 import co.cask.cdap.common.conf.Constants;
-import co.cask.cdap.messaging.store.MetadataTable;
-import co.cask.cdap.messaging.store.MetadataTableTest;
+import co.cask.cdap.messaging.store.MessageTable;
+import co.cask.cdap.messaging.store.MessageTableTest;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * Tests for {@link LevelDBMetadataTable}.
+ * Tests for {@link LevelDBMessageTable}.
  */
-public class LevelDBMetadataTableTest extends MetadataTableTest {
+public class LevelDBMessageTableTest extends MessageTableTest {
 
   @ClassRule
   public static TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -43,8 +43,10 @@ public class LevelDBMetadataTableTest extends MetadataTableTest {
   }
 
   @Override
-  protected MetadataTable getTable() throws Exception {
-    service.ensureTableExists("metadata");
-    return new LevelDBMetadataTable(service, "metadata");
+  protected MessageTable getTable() throws Exception {
+    final String tableName = "payloadTable";
+    service.ensureTableExists(tableName);
+    return new LevelDBMessageTable(service, tableName);
   }
+
 }
