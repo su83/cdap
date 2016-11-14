@@ -51,7 +51,7 @@ function AdminMetadataPane({ statObject }){
     }
 
     containers.push(
-      <div className="stat-container" key={shortid.generate()}>
+      <div className="stat-column" key={shortid.generate()}>
         {temp}
       </div>
     );

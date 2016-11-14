@@ -70,12 +70,6 @@ export default class ServiceStatus extends Component {
               <div className="service-dropdown-item">
                 Option 2
               </div>
-              <div className="service-dropdown-item">
-                Option 3
-              </div>
-              <div className="service-dropdown-item">
-                Option 4
-              </div>
             </DropdownMenu>
           </Dropdown>
         </div>
