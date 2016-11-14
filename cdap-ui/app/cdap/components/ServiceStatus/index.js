@@ -48,7 +48,6 @@ export default class ServiceStatus extends Component {
       circle = <div className="status-circle-grey" />;
     }
 
-    //To-Do: make it such that the dropdown menu does not get cut off by the container element
     return (
       <div  onClick={this.toggleDropdown} className="service-status">
         {circle}

@@ -198,8 +198,6 @@ class Management extends Component {
   }
 
   render () {
-    console.log('management render!');
-
     //Constructs the Services Navigation
     var navItems = this.state.applications.map( (item) => {
       return (

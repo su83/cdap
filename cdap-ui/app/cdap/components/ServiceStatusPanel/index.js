@@ -35,7 +35,6 @@ export default class ServiceStatusPanel extends Component {
     MyServiceProviderApi.getServicesList()
       .subscribe(
         (res) => {
-          console.log('res: ', res);
           let statuses = [];
           res.forEach((service) => {
             statuses.push({
