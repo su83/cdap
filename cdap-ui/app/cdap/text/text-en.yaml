@@ -112,6 +112,16 @@ features:
       virtual-cores: Virtual Cores
       memory: Memory
       application: Application
+    Services:
+      appfabric: App Fabric
+      log_saver: Log Saver
+      metrics_processor: Metrics Processor
+      dataset_executor: Dataset Executor
+      metadata_service: Metadata Service
+      streams: Streams
+      explore_service: Explore Service
+      metrics: Metrics
+      transaction: Transaction
     Configure:
       title: Configure
       buttons:

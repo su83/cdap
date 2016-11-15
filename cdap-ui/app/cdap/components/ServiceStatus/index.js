@@ -19,6 +19,7 @@ require('./ServiceStatus.less');
 var classNames = require('classnames');
 import Datasource from 'services/datasource';
 import {Dropdown, DropdownMenu} from 'reactstrap';
+import T from 'i18n-react';
 
 export default class ServiceStatus extends Component {
 
@@ -26,23 +27,32 @@ export default class ServiceStatus extends Component {
     super(props);
     this.toggleDropdown = this.toggleDropdown.bind(this);
     this.state = {
-      isDropdownOpen : false
+      isDropdownOpen : false,
+      provisioned : this.props.numProvisioned,
+      requested : this.props.numProvisioned,
+      editProvisioned : false
     };
     this.MyDataSrc = new Datasource();
+    this.editProvisions = this.editProvisions.bind(this);
   }
-
   toggleDropdown(){
     this.setState({
       isDropdownOpen : !this.state.isDropdownOpen
     });
   }
-
+  editProvisions(e) {
+    this.setState({
+      editProvisoned : !this.state.editProvisoned
+    });
+  }
   render(){
     var circle = '';
 
     if(!this.props.isLoading){
       if(this.props.status === 'OK'){
-        circle = <div className={classNames({"status-circle-green" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
+        circle = <div className={classNames({"status-circle-green" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})}>
+                  {this.state.provisioned}
+                 </div>;
       } else {
         circle = <div className={classNames({"status-circle-red" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})} />;
       }
@@ -58,7 +68,7 @@ export default class ServiceStatus extends Component {
       <div  onClick={this.toggleDropdown} className="service-status">
         {circle}
         <div className="status-label">
-          {this.props.name}
+          {T.translate(`features.Management.Services.${this.props.name.split('.').join('_')}`)}
         </div>
         <div className="service-dropdown-container">
           <Dropdown
@@ -69,15 +79,35 @@ export default class ServiceStatus extends Component {
             <span className="fa fa-caret-down service-dropdown-caret">
             </span>
             <DropdownMenu>
-              <div className="service-dropdown-item">
-                Provisioned: {this.props.numProvisioned}
+              <div className="dropdown-service-name service-dropdown-item">
+                {circle}
+                <div className="status-label">
+                  {T.translate(`features.Management.Services.${this.props.name.split('.').join('_')}`)}
+                </div>
               </div>
               <a href={logUrl} target="_blank">
                 <div className="service-dropdown-item">
                   <span className="fa fa-file-text" />
-                    Logs
+                    View Logs
                 </div>
               </a>
+              <div onClick={this.editProvisions} className="service-dropdown-item">
+                {
+                  this.state.editProvisioned ?
+                    <span>
+                      Provisioned
+                      <input
+                        placeholder={this.state.provisioned}
+                        onChange={this.updateProvisioned}
+                        keyDown={this.onKeyDown}
+                      />
+                    </span>
+                    :
+                    <span>
+                      Provisioned {this.state.provisioned}
+                    </span>
+                }
+              </div>
             </DropdownMenu>
           </Dropdown>
         </div>

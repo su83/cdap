@@ -14,13 +14,14 @@
  * the License.
  */
 @import '../../styles/variables.less';
-@circle-dimension: 15px;
+@circle-dimension: 20px;
 @circle-margin: 4px;
 @circle-top-offset: 2px;
 
 .service-status {
   padding-top: 8px;
-  margin-left: 30px;
+  margin-left: 10px;
+  width: 190px;
   display: inline-block;
   cursor: pointer;
 
@@ -35,10 +36,13 @@
       outline: none;
       color: #333;
       position: absolute;
-      left: -73px;
+      left: -103px;
+      top: -12px;
       border: none;
       margin: 0;
-      min-width: 120px;
+      width: 180px;
+      padding-top: 0;
+      padding-bottom: 0;
 
       a {
         text-decoration: inherit;
@@ -63,6 +67,18 @@
       line-height: 30px;
       padding-left: 10px;
 
+      &.dropdown-service-name {
+        border-bottom: 1px solid black;
+      }
+      &.dropdown-service-name:hover {
+        background-color: transparent;
+      }
+
+      .status-label {
+        color: #000;
+        font-weight: bold;
+      }
+
       .fa {
         padding-right: 10px;
       }
@@ -74,14 +90,18 @@
   }
 
   .status-circle-green {
-    display: inline-block;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     border-radius: 50%;
+    padding-left: 5px;
+    padding-right: 5px;
     margin-top: @circle-margin;
     width: @circle-dimension;
     height: @circle-dimension;
     background-color: #47B834;
     position: relative;
-    top: @circle-top-offset;
+    color: white;
   }
 
   .status-circle-yellow {
