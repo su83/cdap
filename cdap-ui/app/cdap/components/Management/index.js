@@ -145,9 +145,13 @@ class Management extends Component {
   }
 
   componentDidMount(){
+    document.querySelector('#header-namespace-dropdown').style.display = 'none';
     this.lastAccessedNamespace = NamespaceStore.getState().selectedNamespace;
     Mousetrap.bind('left', this.clickLeft);
     Mousetrap.bind('right', this.clickRight);
+  }
+  componentWillUnmount(){
+    document.querySelector('#header-namespace-dropdown').style.display = 'inline-block';
   }
   clickLeft() {
     var index = this.state.applications.indexOf(this.state.application);
