@@ -46,15 +46,12 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
       Object.keys(serviceData[key]).map((item) => {
 
         let humanReadableNum;
-        /* To-DO: enable this to apply units to the storage figures
-        if(key === 'storage'){
-          humanReadableNum = humanReadableNumber(serviceData[key][item], 'STORAGE');
+
+        if(key === 'storage' || key === 'memory'){
+          humanReadableNum = humanReadableNumber(serviceData[key][item]*10000, 'STORAGE');
         } else {
           humanReadableNum = humanReadableNumber(serviceData[key][item]);
         }
-        */
-
-        humanReadableNum = humanReadableNumber(serviceData[key][item]);
 
         pairs.push({
           'statName' : item,

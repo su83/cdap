@@ -164,6 +164,7 @@ features:
         masters: Masters
         missing: Missing
         namespaces: Namespaces
+        namepsaces: Namespaces
         running: Running
         rebooted: Rebooted
         stopped: Stopped
