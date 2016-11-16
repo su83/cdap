@@ -30,7 +30,8 @@ export default class ServiceStatus extends Component {
       isDropdownOpen : false,
       provisioned : this.props.numProvisioned,
       requested : this.props.numProvisioned,
-      editProvisioned : false
+      editProvisioned : false,
+      serviceWarning  : false
     };
     this.MyDataSrc = new Datasource();
     this.editProvisions = this.editProvisions.bind(this);
@@ -40,10 +41,16 @@ export default class ServiceStatus extends Component {
       isDropdownOpen : !this.state.isDropdownOpen
     });
   }
-  editProvisions(e) {
+  editProvisions() {
     this.setState({
       editProvisoned : !this.state.editProvisoned
     });
+  }
+  keyDown(e){
+    //If the enter key is pressed
+    if(e.keyCode !== undefined && e.keyCode === 13){
+      this.toggleDropdown();
+    }
   }
   render(){
     var circle = '';
@@ -65,12 +72,17 @@ export default class ServiceStatus extends Component {
     });
 
     return (
-      <div  onClick={this.toggleDropdown} className="service-status">
+      <div onClick={this.toggleDropdown} className="service-status">
         {circle}
         <div className="status-label">
           {T.translate(`features.Management.Services.${this.props.name.split('.').join('_')}`)}
+          {
+            this.state.serviceWarning ?
+              <i className="fa fa-exclamation-triangle" aria-hidden="true"></i>  :
+              null
+          }
         </div>
-        <div className="service-dropdown-container">
+        <div className="service-dropdown-container pull-right">
           <Dropdown
             isOpen={this.state.isDropdownOpen}
             toggle={this.toggleDropdown}
@@ -91,23 +103,22 @@ export default class ServiceStatus extends Component {
                     View Logs
                 </div>
               </a>
-              <div onClick={this.editProvisions} className="service-dropdown-item">
-                {
-                  this.state.editProvisioned ?
-                    <span>
-                      Provisioned
-                      <input
-                        placeholder={this.state.provisioned}
-                        onChange={this.updateProvisioned}
-                        keyDown={this.onKeyDown}
-                      />
-                    </span>
-                    :
-                    <span>
-                      Provisioned {this.state.provisioned}
-                    </span>
-                }
-              </div>
+              {
+                this.state.editProvisioned ?
+                  <div onClick={this.editProvisions} className="provision-dropdown-item service-dropdown-item">
+                    Provisions
+                    <input
+                      className="provision-input"
+                      placeholder={this.state.provisioned}
+                      onChange={this.updateProvisioned}
+                      onKeyDown={this.keyDown}
+                    />
+                  </div>
+                  :
+                  <div onClick={this.editProvisions} className="provision-dropdown-item service-dropdown-item">
+                    Provisioned {this.state.provisioned}
+                  </div>
+              }
             </DropdownMenu>
           </Dropdown>
         </div>
