@@ -122,6 +122,7 @@ features:
       explore_service: Explore Service
       metrics: Metrics
       transaction: Transaction
+      setBtn: Set
     Configure:
       title: Configure
       buttons:

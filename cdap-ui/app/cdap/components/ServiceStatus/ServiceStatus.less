@@ -20,7 +20,7 @@
 
 .service-status {
   padding-top: 8px;
-  margin-left: 10px;
+  margin-left: 14px;
   width: 190px;
   display: inline-block;
   cursor: pointer;
@@ -29,6 +29,27 @@
   .fa-exclamation-triangle {
     color: yellow;
     margin-left: 5px;
+  }
+
+  .service-error-message,
+  .service-error-message-inline {
+    border-radius: 4px;
+    position: absolute;
+    text-align: center;
+    padding: 4px 4px;
+    color: black;
+    border: solid 1px #000;
+    z-index: 2000;
+    min-width: 270px;
+  }
+
+  .service-error-message-inline {
+    color: black;
+  }
+
+  .service-error-message {
+    top: -10px;
+    background-color: yellow;
   }
 
   .service-dropdown-container {
@@ -64,9 +85,23 @@
         .provision-input {
           display: inline-block;
           width: 50px;
-          height: 25px;
+          height: 20px;
           margin-left: 5px;
           padding-left: 5px;
+        }
+
+        .set-provision-btn {
+          line-height: 8px;
+          margin-left: 5px;
+          margin-bottom: 2px;
+          height: 20px;
+          background-color: black;
+          color: white;
+          outline: none;
+        }
+
+        .provision-btn-with-warning {
+          padding-top: 3px;
         }
       }
     }
@@ -84,7 +119,7 @@
       outline: 0;
       cursor: auto;
       line-height: 30px;
-      padding-left: 10px;
+      padding-left: 5px;
 
       &.dropdown-service-name {
         border-bottom: 1px solid black;
@@ -98,7 +133,7 @@
         font-weight: bold;
       }
 
-      .fa {
+      .fa-file-text {
         padding-right: 10px;
       }
 
