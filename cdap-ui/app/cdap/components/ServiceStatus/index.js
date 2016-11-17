@@ -25,7 +25,6 @@ export default class ServiceStatus extends Component {
 
   constructor(props){
     super(props);
-    this.toggleDropdownAndUpdate = this.toggleDropdownAndUpdate.bind(this);
     this.state = {
       isDropdownOpen : false,
       provisioned : this.props.numProvisioned,
@@ -36,68 +35,67 @@ export default class ServiceStatus extends Component {
       provisionsLoading : false,
       enteredProvisionValue : '',
       showBtnError : false,
-      errorText: 'Instance count should be between [1,1]'
+      errorText: ''
     };
     this.MyDataSrc = new Datasource();
     this.keyDown = this.keyDown.bind(this);
     this.toggleErrorMessage = this.toggleErrorMessage.bind(this);
     this.onProvisionChange = this.onProvisionChange.bind(this);
-    this.toggleErrorBtn = this.toggleErrorBtn.bind(this);
+    this.toggleErrorInBtn = this.toggleErrorInBtn.bind(this);
+    this.provisionRowClickHandler = this.provisionRowClickHandler.bind(this);
+    this.setProvisionNumber = this.setProvisionNumber.bind(this);
+    this.updateProvision = this.updateProvision.bind(this);
+    this.toggleDropdown = this.toggleDropdown.bind(this);
   }
 
-  //If the dropdown is open and the entered value is a number
-  toggleDropdownAndUpdate(){
+  toggleDropdown(){
+    this.setState({
+      isDropdownOpen : !this.state.isDropdownOpen
+    });
+  }
 
-    if(this.state.isDropdownOpen && !isNaN(Number(this.state.enteredProvisionValue))){
-      //Make a request and set state to loading until we receive the response
+  updateProvision(){
+    this.setState({
+      provisionsLoading : true
+    });
+
+    MyServiceProviderApi.setProvisions({
+      serviceid : this.props.name
+    }, {
+      instances : this.state.enteredProvisionValue
+    }).subscribe(() => {
       this.setState({
-        isDropdownOpen : !this.state.isDropdownOpen,
-        serviceWarning : true
+        provisionsLoading : false,
+        serviceWarning : false
       });
-
-      MyServiceProviderApi.setProvisions({
-        //Place the current name in the request
-        serviceid : this.props.name
-      }, {
-        instances : this.state.enteredProvisionValue
-      }).subscribe(() => {
+    }, (err)=> {
         this.setState({
           provisionsLoading : false,
-          enteredProvisionValue : ''
+          serviceWarning : true,
+          errorText : err.response
         });
-      });
-
-    } else {
-      //Toggle the dropdown menu
-      this.setState({
-        isDropdownOpen : !this.state.isDropdownOpen
-      });
-    }
+    });
   }
 
   onProvisionChange(e){
     this.setState({
-      requested : e.target.value
+      enteredProvisionValue : e.target.value
     });
   }
   //If the user presses enter, we set the state to reflect the entered value and close the dropdown
   keyDown(e){
     if(e.keyCode !== undefined && e.keyCode === 13){
       //If there is no entered value do not set entered value
-      if(e.target.value === ''){
-        this.toggleDropdownAndUpdate();
-      } else {
-        this.setState({
-          enteredProvisionValue : e.target.value
-        }, () => {
-          this.toggleDropdownAndUpdate();
-        });
-      }
+      this.setState({
+        enteredProvisionValue : e.target.value
+      }, () => {
+        this.updateProvision();
+      });
     }
   }
 
   setProvisionNumber(){
-
+    this.updateProvision();
   }
 
   //IF there is an error message, toggle depending on the event type
@@ -115,7 +113,7 @@ export default class ServiceStatus extends Component {
     }
   }
   //IF there is an error message, toggle depending on the event type
-  toggleErrorBtn(e){
+  toggleErrorInBtn(e){
     if(this.state.serviceWarning){
       if(e.type === 'mouseover'){
         this.setState({
@@ -128,14 +126,16 @@ export default class ServiceStatus extends Component {
       }
     }
   }
-
+  provisionRowClickHandler(e){
+    e.stopPropagation();
+  }
   render(){
     var circle = '';
 
     if(!this.props.isLoading){
       if(this.state.provisionsLoading){
         circle = <div className={classNames({"status-circle-green" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})}>
-                  <span className="fa fa-cog fa-spin fa-fw" />
+                  <span className="fa fa-spinner fa-spin fa-fw" />
                  </div>;
       } else if(this.props.status === 'OK'){
         circle = <div className={classNames({"status-circle-green" : !this.props.isLoading, "status-circle-grey" : this.props.isLoading})}>
@@ -156,7 +156,7 @@ export default class ServiceStatus extends Component {
 
     return (
       <div
-        onClick={this.toggleDropdownAndUpdate}
+        onClick={this.toggleDropdown}
         className="service-status"
         onMouseOver={this.toggleErrorMessage}
         onMouseOut={this.toggleErrorMessage}
@@ -186,7 +186,7 @@ export default class ServiceStatus extends Component {
         <div className="service-dropdown-container pull-right">
           <Dropdown
             isOpen={this.state.isDropdownOpen}
-            toggle={this.toggleDropdownAndUpdate}
+            toggle={this.toggleDropdown}
             className="service-dropdown"
           >
             <span className="fa fa-caret-down service-dropdown-caret">
@@ -206,10 +206,11 @@ export default class ServiceStatus extends Component {
               </a>
               <div
                 className="provision-dropdown-item service-dropdown-item"
+                onClick={this.provisionRowClickHandler}
                 onMouseOver={this.toggleErrorMessage}
                 onMouseOut={this.toggleErrorMessage}
               >
-                Provisions
+                Requested
                 <input
                   className="provision-input"
                   autoFocus
@@ -218,8 +219,8 @@ export default class ServiceStatus extends Component {
                   onKeyDown={this.keyDown}
                 />
                 <button
-                  onMouseOver={this.toggleErrorBtn}
-                  onMouseOut={this.toggleErrorBtn}
+                  onMouseOver={this.toggleErrorInBtn}
+                  onMouseOut={this.toggleErrorInBtn}
                   className={provisionBtnClasses}
                   onClick={this.setProvisionNumber}
                 >
