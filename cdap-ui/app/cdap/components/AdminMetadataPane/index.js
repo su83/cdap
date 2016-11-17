@@ -20,7 +20,6 @@ import StatContainer from '../StatContainer/index.js';
 import shortid from 'shortid';
 import T from 'i18n-react';
 
-//To-Do: Change the way we display these statistics -- we should not have to rely on containers
 function AdminMetadataPane({ statObject }){
 
   if(!statObject || !statObject.stats) { return; }
