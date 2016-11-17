@@ -35,7 +35,8 @@ export default class ServiceStatus extends Component {
       showError : false,
       provisionsLoading : false,
       enteredProvisionValue : '',
-      showBtnError : false
+      showBtnError : false,
+      errorText: 'Instance count should be between [1,1]'
     };
     this.MyDataSrc = new Datasource();
     this.keyDown = this.keyDown.bind(this);
@@ -151,7 +152,7 @@ export default class ServiceStatus extends Component {
       _cdapPath : `/system/services/${this.props.name}/logs/next?&maxSize=50`
     });
 
-    let provisionBtnClasses = classNames('btn btn-default set-provision-btn', {'provision-btn-with-warning' : this.state.serviceWarning});
+    let provisionBtnClasses = classNames('btn btn-default btn-primary set-provision-btn', {'provision-btn-with-warning' : this.state.serviceWarning});
 
     return (
       <div
@@ -172,7 +173,7 @@ export default class ServiceStatus extends Component {
               {
                 this.state.showError && !this.state.isDropdownOpen?
                 <div className="service-error-message">
-                  Instance count should be between [1,1]
+                  {this.state.errorText}
                 </div>
                 :
                 null
@@ -232,7 +233,8 @@ export default class ServiceStatus extends Component {
                       {
                         this.state.showBtnError && this.state.isDropdownOpen ?
                         <div className="service-error-message-inline">
-                          Instance count should be between [1,1]
+                          <div className="fa fa-caret-up" />
+                          {this.state.errorText}
                         </div>
                         :
                         null
