@@ -44,10 +44,11 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
- * A class to maintain a cache of extensions available in a configured extensions directory. It uses the Java
+ * A class to load extensions for supported extension types from a configured extensions directory. It uses the Java
  * {@link ServiceLoader} architecture to load extensions from the specified directory. It first tries to load
  * extensions using a {@link URLClassLoader} consisting of all jars in the configured extensions directory. For unit
- * tests, it loads extensions using the system classloader.
+ * tests, it loads extensions using the system classloader. If an extension is not found via the extensions classloader
+ * or the system classloader, it returns a default extension.
  *
  * The supported directory structure is:
  * <pre>
@@ -60,26 +61,30 @@ import javax.annotation.Nullable;
  *
  * Each extensions jar file above can contain multiple extensions.
  * 
- * @param <CACHE_KEY> the key type stored in the cache
- * @param <CACHE_VALUE> the value type stored in the cache
+ * @param <EXTENSION_TYPE> the data type of the objects that a given extension can be used for. e.g. for a program
+ *                        runtime extension, the list of program types that the extension can be used for
+ * @param <EXTENSION> the data type of the extension
  */
-public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
+public class ExtensionLoader<EXTENSION_TYPE, EXTENSION> {
   private static final Logger LOG = LoggerFactory.getLogger(ExtensionLoader.class);
 
   private final List<String> extDirs;
-  private final Class<CACHE_VALUE> cacheValueClass;
-  // The ServiceLoader that loads extension implementation from the CDAP system classloader.
-  private final ServiceLoader<CACHE_VALUE> systemExtensionLoader;
-  private final Function<CACHE_VALUE, Set<CACHE_KEY>> extensionToKeys;
-  private final LoadingCache<CACHE_KEY, CACHE_VALUE> extensionsCache;
-  private final CACHE_VALUE defaultExtension;
+  private final Class<EXTENSION> extensionClass;
+  // A ServiceLoader that loads extension implementation from the CDAP system classloader.
+  private final ServiceLoader<EXTENSION> systemExtensionLoader;
+  // A function that maps an extension to the extension types that it supports. e.g. when the ExtensionLoader is used
+  // to load program runtime extensions, this function can map an extension to the program types that it supports.
+  // This is ultimately used to filter the available extensions to find the one that supports the requested type.
+  private final Function<EXTENSION, Set<EXTENSION_TYPE>> extensionToSupportedTypes;
+  private final LoadingCache<EXTENSION_TYPE, EXTENSION> extensionsCache;
+  private final EXTENSION defaultExtension;
 
-  public ExtensionLoader(String extDirs, Function<CACHE_VALUE, Set<CACHE_KEY>> extensionToKeys,
-                         Class<CACHE_VALUE> cacheValueClass, CACHE_VALUE defaultExtension) {
+  public ExtensionLoader(String extDirs, Function<EXTENSION, Set<EXTENSION_TYPE>> extensionToSupportedTypes,
+                         Class<EXTENSION> extensionClass, EXTENSION defaultExtension) {
     this.extDirs = ImmutableList.copyOf(Splitter.on(';').omitEmptyStrings().trimResults().split(extDirs));
-    this.cacheValueClass = cacheValueClass;
-    this.systemExtensionLoader = ServiceLoader.load(cacheValueClass);
-    this.extensionToKeys = extensionToKeys;
+    this.extensionClass = extensionClass;
+    this.systemExtensionLoader = ServiceLoader.load(extensionClass);
+    this.extensionToSupportedTypes = extensionToSupportedTypes;
     this.extensionsCache = createExtensionsCache();
     this.defaultExtension = defaultExtension;
   }
@@ -87,14 +92,14 @@ public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
   /**
    * Returns the extension for the specified key.
    */
-  public CACHE_VALUE getExtension(CACHE_KEY key) {
+  public EXTENSION getExtension(EXTENSION_TYPE key) {
     return extensionsCache.getUnchecked(key);
   }
 
   /**
    * Returns all cached extensions.
    */
-  public Map<CACHE_KEY, CACHE_VALUE> listExtensions() {
+  public Map<EXTENSION_TYPE, EXTENSION> listExtensions() {
     return extensionsCache.asMap();
   }
 
@@ -110,11 +115,11 @@ public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
     extensionsCache.invalidateAll();
   }
 
-  private LoadingCache<CACHE_KEY, CACHE_VALUE> createExtensionsCache() {
-    return CacheBuilder.newBuilder().build(new CacheLoader<CACHE_KEY, CACHE_VALUE>() {
+  private LoadingCache<EXTENSION_TYPE, EXTENSION> createExtensionsCache() {
+    return CacheBuilder.newBuilder().build(new CacheLoader<EXTENSION_TYPE, EXTENSION>() {
       @Override
-      public CACHE_VALUE load(CACHE_KEY key) throws Exception {
-        Map<CACHE_KEY, CACHE_VALUE> extensions = findExtensions(key);
+      public EXTENSION load(EXTENSION_TYPE key) throws Exception {
+        Map<EXTENSION_TYPE, EXTENSION> extensions = findExtensions(key);
         // If there is none found in the ext dir, try to look it up from the CDAP system class ClassLoader.
         // This is for the unit-test case, where extensions are part of the test dependency, hence in the
         // unit-test ClassLoader.
@@ -127,12 +132,12 @@ public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
   }
 
   /**
-   * Creates a cache for caching extension directory to {@link ServiceLoader} of {@link CACHE_VALUE}.
+   * Creates a cache for caching extension directory to {@link ServiceLoader} of {@link EXTENSION}.
    */
-  private LoadingCache<File, ServiceLoader<CACHE_VALUE>> createServiceLoaderCache() {
-    return CacheBuilder.newBuilder().build(new CacheLoader<File, ServiceLoader<CACHE_VALUE>>() {
+  private LoadingCache<File, ServiceLoader<EXTENSION>> createServiceLoaderCache() {
+    return CacheBuilder.newBuilder().build(new CacheLoader<File, ServiceLoader<EXTENSION>>() {
       @Override
-      public ServiceLoader<CACHE_VALUE> load(File dir) throws Exception {
+      public ServiceLoader<EXTENSION> load(File dir) throws Exception {
         return createServiceLoader(dir);
       }
     });
@@ -141,7 +146,7 @@ public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
   /**
    * Creates a {@link ServiceLoader} from the {@link ClassLoader} created by all jar files under the given directory.
    */
-  private ServiceLoader<CACHE_VALUE> createServiceLoader(File dir) {
+  private ServiceLoader<EXTENSION> createServiceLoader(File dir) {
     List<File> files = new ArrayList<>(DirUtils.listFiles(dir, "jar"));
     Collections.sort(files);
 
@@ -158,17 +163,17 @@ public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
     }), URL.class);
 
     URLClassLoader classLoader = new URLClassLoader(urls, ExtensionLoader.class.getClassLoader());
-    return ServiceLoader.load(cacheValueClass, classLoader);
+    return ServiceLoader.load(extensionClass, classLoader);
   }
 
   /**
    * Finds the first extension from the given {@link ServiceLoader} that supports the specified key. If the key
    * specified is {@code null}, returns all extensions from the extensions directory.
    */
-  private Map<CACHE_KEY, CACHE_VALUE> findExtensions(@Nullable CACHE_KEY key) {
-    Map<CACHE_KEY, CACHE_VALUE> extensions = new HashMap<>();
+  private Map<EXTENSION_TYPE, EXTENSION> findExtensions(@Nullable EXTENSION_TYPE key) {
+    Map<EXTENSION_TYPE, EXTENSION> extensions = new HashMap<>();
     // A LoadingCache from extension directory to ServiceLoader
-    final LoadingCache<File, ServiceLoader<CACHE_VALUE>> serviceLoaderCache = createServiceLoaderCache();
+    final LoadingCache<File, ServiceLoader<EXTENSION>> serviceLoaderCache = createServiceLoaderCache();
     for (String dir : extDirs) {
       File extDir = new File(dir);
       if (!extDir.isDirectory()) {
@@ -190,7 +195,7 @@ public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
     }
     // For unit tests, try to load the extensions from the system classloader. Only add those extensions which
     // were not already loaded using the extension classloader.
-    for (Map.Entry<CACHE_KEY, CACHE_VALUE> entry : findExtensions(systemExtensionLoader, key).entrySet()) {
+    for (Map.Entry<EXTENSION_TYPE, EXTENSION> entry : findExtensions(systemExtensionLoader, key).entrySet()) {
       if (!extensions.containsKey(entry.getKey())) {
         extensions.put(entry.getKey(), entry.getValue());
       }
@@ -202,16 +207,16 @@ public class ExtensionLoader<CACHE_KEY, CACHE_VALUE> {
    * Returns the first available extension that support the specified key using the specified {@link ServiceLoader}.
    * If the key is {@code null}, returns all the extensions in the extensions directory
    */
-  private Map<CACHE_KEY, CACHE_VALUE> findExtensions(ServiceLoader<CACHE_VALUE> serviceLoader, CACHE_KEY key) {
-    Map<CACHE_KEY, CACHE_VALUE> extensions = new HashMap<>();
-    for (CACHE_VALUE provider : serviceLoader) {
-      Set<CACHE_KEY> cacheKeys = extensionToKeys.apply(provider);
+  private Map<EXTENSION_TYPE, EXTENSION> findExtensions(ServiceLoader<EXTENSION> serviceLoader, EXTENSION_TYPE key) {
+    Map<EXTENSION_TYPE, EXTENSION> extensions = new HashMap<>();
+    for (EXTENSION provider : serviceLoader) {
+      Set<EXTENSION_TYPE> cacheKeys = extensionToSupportedTypes.apply(provider);
       if (cacheKeys == null) {
         continue;
       }
       // If key is not specified, add all the supported keys of the provider
       if (key == null) {
-        for (CACHE_KEY cacheKey : cacheKeys) {
+        for (EXTENSION_TYPE cacheKey : cacheKeys) {
           extensions.put(cacheKey, provider);
         }
       } else {
