@@ -84,7 +84,10 @@ function AdminDetailPanel({applicationName, timeFromUpdate, clickLeftButton, cli
     }
   }
 
-  let translatedApplicationName = T.translate(`features.Management.Component-Overview.headers.${applicationName}`);
+  let translatedApplicationName = applicationName ?
+      T.translate(`features.Management.Component-Overview.headers.${applicationName}`)
+      :
+      <span className="fa fa-spinner" />;
 
   return (
     <div className="admin-detail-panel">
